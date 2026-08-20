@@ -1,0 +1,59 @@
+app_name: "vectorscale-engine"
+environment: "development"
+
+spark:
+  master: "local[2]"
+  app_name: "VectorScale-Batch-Pipeline-Local"
+  driver_memory: "2g"
+  executor_memory: "2g"
+  executor_cores: 2
+  default_parallelism: 4
+  shuffle_partitions: 4
+  arrow_max_records_per_batch: 2000
+  kryo_buffer_max_mb: 128
+
+pipeline:
+  input_path: "data/sample/documents.jsonl"
+  staging_path: "data/processed/staged_features.parquet"
+  output_vector_path: "data/embeddings/vectors.parquet"
+  batch_size: 512
+  max_records: 5000
+
+features:
+  id_column: "document_id"
+  text_column: "content"
+  metadata_columns: ["source", "timestamp", "category"]
+  min_token_length: 3
+  max_token_length: 1024
+  chunk_size: 128
+  chunk_overlap: 16
+  deduplication_enabled: true
+  deduplication_method: "exact_hash"
+
+vector_engine:
+  model_name: "all-MiniLM-L6-v2"
+  embedding_dim: 384
+  normalize_l2: true
+  quantization_mode: "INT8"
+  clip_threshold: 2.5
+  pca_projection_dim: 3
+
+partitioning:
+  strategy: "hash"
+  num_partitions: 4
+  partition_key: "partition_id"
+
+storage:
+  sink_type: "parquet"
+  parquet_compression: "snappy"
+  row_group_size_mb: 32
+  qdrant_url: "http://localhost:6333"
+  qdrant_collection: "vectorscale_dev"
+  minio_endpoint: "localhost:9000"
+  minio_bucket: "vectorscale-dev"
+  minio_access_key: "minioadmin"
+  minio_secret_key: "minioadmin"
+
+logging:
+  level: "DEBUG"
+  format: "text"
