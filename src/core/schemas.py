@@ -1,7 +1,8 @@
-import hashlib
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
+
 
 class RawDocument(BaseModel):
     document_id: str
@@ -10,6 +11,7 @@ class RawDocument(BaseModel):
     category: Optional[str] = "general"
     timestamp: Optional[str] = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     metadata: Dict[str, Any] = Field(default_factory=dict)
+
 
 class CleanedDocument(BaseModel):
     document_id: str
@@ -21,6 +23,7 @@ class CleanedDocument(BaseModel):
     source: Optional[str] = "unknown"
     category: Optional[str] = "general"
     metadata: Dict[str, Any] = Field(default_factory=dict)
+
 
 class DocumentChunk(BaseModel):
     chunk_id: str
@@ -35,6 +38,7 @@ class DocumentChunk(BaseModel):
     category: Optional[str] = "general"
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
+
 class VectorPayload(BaseModel):
     chunk_id: str
     document_id: str
@@ -48,6 +52,7 @@ class VectorPayload(BaseModel):
     partition_id: int = 0
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
+
 class BatchStageMetrics(BaseModel):
     stage_name: str
     input_records: int
@@ -55,6 +60,7 @@ class BatchStageMetrics(BaseModel):
     duration_seconds: float
     throughput_records_per_sec: float
     memory_used_mb: float = 0.0
+
 
 class PipelineAuditReport(BaseModel):
     job_id: str
@@ -72,40 +78,54 @@ class PipelineAuditReport(BaseModel):
     storage_sink: str
     errors: List[str] = Field(default_factory=list)
 
+
 def get_spark_raw_schema():
     """Returns the PySpark StructType for raw document ingestion."""
     try:
-        from pyspark.sql.types import StructType, StructField, StringType, MapType
-        return StructType([
-            StructField("document_id", StringType(), False),
-            StructField("content", StringType(), False),
-            StructField("source", StringType(), True),
-            StructField("category", StringType(), True),
-            StructField("timestamp", StringType(), True),
-            StructField("metadata", MapType(StringType(), StringType()), True)
-        ])
+        from pyspark.sql.types import MapType, StringType, StructField, StructType
+
+        return StructType(
+            [
+                StructField("document_id", StringType(), False),
+                StructField("content", StringType(), False),
+                StructField("source", StringType(), True),
+                StructField("category", StringType(), True),
+                StructField("timestamp", StringType(), True),
+                StructField("metadata", MapType(StringType(), StringType()), True),
+            ]
+        )
     except ImportError:
         return None
+
 
 def get_spark_vector_schema():
     """Returns the PySpark StructType for partitioned vector feature records."""
     try:
         from pyspark.sql.types import (
-            StructType, StructField, StringType, IntegerType, FloatType, 
-            ArrayType, BinaryType, MapType
+            ArrayType,
+            BinaryType,
+            FloatType,
+            IntegerType,
+            MapType,
+            StringType,
+            StructField,
+            StructType,
         )
-        return StructType([
-            StructField("chunk_id", StringType(), False),
-            StructField("document_id", StringType(), False),
-            StructField("chunk_index", IntegerType(), False),
-            StructField("chunk_content", StringType(), False),
-            StructField("vector_fp32", ArrayType(FloatType()), True),
-            StructField("vector_int8", BinaryType(), True),
-            StructField("scale_factor", FloatType(), False),
-            StructField("zero_point", IntegerType(), False),
-            StructField("l2_norm", FloatType(), False),
-            StructField("partition_id", IntegerType(), False),
-            StructField("metadata", MapType(StringType(), StringType()), True)
-        ])
+
+        return StructType(
+            [
+                StructField("chunk_id", StringType(), False),
+                StructField("document_id", StringType(), False),
+                StructField("chunk_index", IntegerType(), False),
+                StructField("chunk_content", StringType(), False),
+                StructField("vector_fp32", ArrayType(FloatType()), True),
+                StructField("vector_int8", BinaryType(), True),
+                StructField("scale_factor", FloatType(), False),
+                StructField("zero_point", IntegerType(), False),
+                StructField("l2_norm", FloatType(), False),
+                StructField("partition_id", IntegerType(), False),
+                StructField("metadata", MapType(StringType(), StringType()), True),
+            ]
+        )
     except ImportError:
         return None

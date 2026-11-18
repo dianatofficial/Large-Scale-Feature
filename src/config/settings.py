@@ -1,9 +1,10 @@
-import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
 import yaml
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class SparkSettings(BaseModel):
     master: str = "local[*]"
@@ -16,12 +17,14 @@ class SparkSettings(BaseModel):
     arrow_max_records_per_batch: int = 10000
     kryo_buffer_max_mb: int = 512
 
+
 class PipelineSettings(BaseModel):
     input_path: str = "data/raw/documents.jsonl"
     staging_path: str = "data/processed/staged_features.parquet"
     output_vector_path: str = "data/embeddings/vectors.parquet"
     batch_size: int = 2048
     max_records: Optional[int] = None
+
 
 class FeatureSettings(BaseModel):
     id_column: str = "document_id"
@@ -34,6 +37,7 @@ class FeatureSettings(BaseModel):
     deduplication_enabled: bool = True
     deduplication_method: str = "exact_hash"
 
+
 class VectorSettings(BaseModel):
     model_name: str = "all-MiniLM-L6-v2"
     embedding_dim: int = 384
@@ -42,10 +46,12 @@ class VectorSettings(BaseModel):
     clip_threshold: float = 2.5
     pca_projection_dim: Optional[int] = 3
 
+
 class PartitionSettings(BaseModel):
     strategy: str = "hash"
     num_partitions: int = 16
     partition_key: str = "partition_id"
+
 
 class StorageSettings(BaseModel):
     sink_type: str = "parquet"
@@ -58,9 +64,11 @@ class StorageSettings(BaseModel):
     minio_access_key: str = "minioadmin"
     minio_secret_key: str = "minioadmin"
 
+
 class LoggingSettings(BaseModel):
     level: str = "INFO"
     format: str = "json"
+
 
 class AppConfig(BaseSettings):
     app_name: str = "vectorscale-engine"
@@ -73,11 +81,8 @@ class AppConfig(BaseSettings):
     storage: StorageSettings = Field(default_factory=StorageSettings)
     logging: LoggingSettings = Field(default_factory=LoggingSettings)
 
-    model_config = SettingsConfigDict(
-        env_prefix="VECTOR_SCALE_",
-        env_nested_delimiter="__",
-        case_sensitive=False
-    )
+    model_config = SettingsConfigDict(env_prefix="VECTOR_SCALE_", env_nested_delimiter="__", case_sensitive=False)
+
 
 def load_config(config_path: Optional[str] = None) -> AppConfig:
     """Loads configuration from a YAML file with environment variable fallback."""

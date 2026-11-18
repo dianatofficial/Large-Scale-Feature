@@ -1,50 +1,47 @@
 import hashlib
-import struct
 from typing import List
+
 import numpy as np
 import pandas as pd
 from pyspark.sql.functions import pandas_udf
-from pyspark.sql.types import (
-    ArrayType,
-    BinaryType,
-    FloatType,
-    IntegerType,
-    StringType,
-    StructField,
-    StructType,
-)
+from pyspark.sql.types import ArrayType, BinaryType, FloatType, IntegerType, StringType
 
 from src.core.chunker import TextChunker
 from src.core.normalizer import TextNormalizer
-from src.core.vector_ops import l2_normalize, quantize_int8
 
 # Thread-safe global instances for worker tasks
 _normalizer = TextNormalizer()
 _chunker = TextChunker(chunk_size=256, chunk_overlap=32)
 
-@pandas_udf(StringType())
+
+@pandas_udf(StringType())  # type: ignore[call-overload]
 def clean_text_udf(series: pd.Series) -> pd.Series:
     """Vectorized Arrow Pandas UDF for text cleaning and unicode normalization."""
     normalizer = TextNormalizer()
     return series.fillna("").apply(normalizer.clean)
 
-@pandas_udf(StringType())
+
+@pandas_udf(StringType())  # type: ignore[call-overload]
 def content_hash_udf(series: pd.Series) -> pd.Series:
     """Vectorized Arrow Pandas UDF for deterministic SHA-256 payload hashing."""
     return series.fillna("").apply(lambda t: hashlib.sha256(t.encode("utf-8")).hexdigest() if t else "")
 
-@pandas_udf(ArrayType(StringType()))
+
+@pandas_udf(ArrayType(StringType()))  # type: ignore[call-overload]
 def chunk_text_udf(series: pd.Series) -> pd.Series:
     """Vectorized Arrow Pandas UDF for recursive text chunking into string arrays."""
     chunker = TextChunker(chunk_size=256, chunk_overlap=32)
+
     def _chunk(text: str) -> List[str]:
         if not text or not text.strip():
             return []
         chunks = chunker.chunk_text(document_id="tmp", text=text)
         return [c.chunk_content for c in chunks]
+
     return series.fillna("").apply(_chunk)
 
-@pandas_udf(ArrayType(FloatType()))
+
+@pandas_udf(ArrayType(FloatType()))  # type: ignore[call-overload]
 def generate_deterministic_embedding_udf(series: pd.Series) -> pd.Series:
     """
     Vectorized Arrow Pandas UDF generating high-throughput dense feature vectors.
@@ -57,7 +54,7 @@ def generate_deterministic_embedding_udf(series: pd.Series) -> pd.Series:
         if not text:
             results.append([0.0] * dim)
             continue
-        
+
         # Fast deterministic hash-based feature representation
         words = text.lower().split()
         vec = np.zeros(dim, dtype=np.float32)
@@ -79,10 +76,11 @@ def generate_deterministic_embedding_udf(series: pd.Series) -> pd.Series:
 
     return pd.Series(results)
 
-@pandas_udf(ArrayType(FloatType()))
+
+@pandas_udf(ArrayType(FloatType()))  # type: ignore[call-overload]
 def vector_l2_normalize_udf(series: pd.Series) -> pd.Series:
     """Vectorized Arrow Pandas UDF for L2 unit normalization of float arrays."""
-    results = []
+    results: list[list[float]] = []
     for vec_list in series:
         if vec_list is None or len(vec_list) == 0:
             results.append([])
@@ -94,7 +92,8 @@ def vector_l2_normalize_udf(series: pd.Series) -> pd.Series:
         results.append(arr.tolist())
     return pd.Series(results)
 
-@pandas_udf(BinaryType())
+
+@pandas_udf(BinaryType())  # type: ignore[call-overload]
 def vector_quantize_int8_udf(series: pd.Series) -> pd.Series:
     """
     Vectorized Arrow Pandas UDF converting float arrays into compact INT8 byte buffers.
@@ -103,7 +102,7 @@ def vector_quantize_int8_udf(series: pd.Series) -> pd.Series:
     results = []
     clip_threshold = 2.5
     scale = clip_threshold / 127.0
-    
+
     for vec_list in series:
         if vec_list is None or len(vec_list) == 0:
             results.append(b"")
@@ -114,7 +113,8 @@ def vector_quantize_int8_udf(series: pd.Series) -> pd.Series:
         results.append(q.tobytes())
     return pd.Series(results)
 
-@pandas_udf(IntegerType())
+
+@pandas_udf(IntegerType())  # type: ignore[call-overload]
 def compute_partition_id_udf(id_series: pd.Series) -> pd.Series:
     """Computes balanced integer partition ID from Murmur/MD5 hash for vector sharding."""
     num_partitions = 16

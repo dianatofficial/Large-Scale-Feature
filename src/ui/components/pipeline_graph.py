@@ -1,5 +1,6 @@
 import streamlit as st
 
+
 def render_pipeline_dag():
     """Renders high-level distributed execution DAG graph."""
     dag_code = """

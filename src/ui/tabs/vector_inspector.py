@@ -1,8 +1,9 @@
-import streamlit as st
 import numpy as np
-import pandas as pd
 import plotly.express as px
+import streamlit as st
+
 from src.core.vector_ops import l2_normalize
+
 
 def render_vector_inspector_tab(sim_engine):
     st.markdown("### Vector Partitioning & Similarity Search Engine")
@@ -31,7 +32,7 @@ def render_vector_inspector_tab(sim_engine):
             color="Vector Count",
             color_continuous_scale="Blues",
             template="plotly_dark",
-            title="Vector Distribution Across Cluster Shards"
+            title="Vector Distribution Across Cluster Shards",
         )
         fig.update_layout(margin=dict(l=10, r=10, b=20, t=40))
         st.plotly_chart(fig, use_container_width=True)
@@ -44,7 +45,7 @@ def render_vector_inspector_tab(sim_engine):
         if query_text:
             query_vec = sim_engine.generate_dense_embedding(query_text)
             norm_q = l2_normalize(query_vec)
-            
+
             # Pairwise cosine score
             scores = np.dot(vector_matrix, norm_q)
             top_indices = np.argsort(scores)[::-1][:top_k]

@@ -1,10 +1,13 @@
 import logging
 from typing import Optional
+
 from pyspark.sql import SparkSession
-from src.config.settings import SparkSettings
+
 from config.spark_config import get_optimized_spark_properties
+from src.config.settings import SparkSettings
 
 logger = logging.getLogger(__name__)
+
 
 class SparkSessionManager:
     """Lifecycle manager for Apache Spark session with optimized Arrow configuration."""

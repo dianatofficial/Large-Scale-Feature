@@ -1,6 +1,6 @@
-import os
 import sys
 from pathlib import Path
+
 import streamlit as st
 
 # Bootstrap root path for zero-dependency imports
@@ -9,20 +9,21 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from src.simulation.mock_engine import VectorScaleSimulationEngine
-from src.ui.tabs.live_pipeline import render_live_pipeline_tab
-from src.ui.tabs.embedding_sandbox import render_embedding_sandbox_tab
-from src.ui.tabs.vector_inspector import render_vector_inspector_tab
 from src.ui.tabs.cluster_monitor import render_cluster_monitor_tab
+from src.ui.tabs.embedding_sandbox import render_embedding_sandbox_tab
+from src.ui.tabs.live_pipeline import render_live_pipeline_tab
+from src.ui.tabs.vector_inspector import render_vector_inspector_tab
 
 st.set_page_config(
     page_title="VectorScale | Distributed Feature Engineering Engine",
     page_icon="?",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
 # Custom Dark Theme CSS
-st.markdown("""
+st.markdown(
+    """
 <style>
     .main-header {
         font-size: 2.2rem;
@@ -52,16 +53,16 @@ st.markdown("""
         font-weight: 600;
     }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # Sidebar Configuration
 st.sidebar.title("? VectorScale Engine")
 st.sidebar.caption("High-Throughput Distributed Feature Pipeline")
 
 cluster_mode = st.sidebar.selectbox(
-    "Execution Engine Mode",
-    ["Standalone In-Memory Sandbox (Cloud Ready)", "Apache Spark Cluster (Live Mode)"],
-    index=0
+    "Execution Engine Mode", ["Standalone In-Memory Sandbox (Cloud Ready)", "Apache Spark Cluster (Live Mode)"], index=0
 )
 
 st.sidebar.divider()
@@ -75,7 +76,12 @@ num_partitions = st.sidebar.select_slider("Partition Shards", options=[2, 4, 8, 
 
 st.sidebar.divider()
 st.sidebar.markdown("### Target Vector Sink")
-st.sidebar.code("Format: Parquet (Snappy)\nSharding: MurmurHash3\nVector Dim: " + str(embedding_dim) + "\nStorage: Local / MinIO S3", language="yaml")
+st.sidebar.code(
+    "Format: Parquet (Snappy)\nSharding: MurmurHash3\nVector Dim: "
+    + str(embedding_dim)
+    + "\nStorage: Local / MinIO S3",
+    language="yaml",
+)
 
 # Initialize Engine
 sim_engine = VectorScaleSimulationEngine(
@@ -83,14 +89,17 @@ sim_engine = VectorScaleSimulationEngine(
     chunk_size=chunk_size,
     chunk_overlap=chunk_overlap,
     num_partitions=num_partitions,
-    clip_threshold=2.5
+    clip_threshold=2.5,
 )
 
 # Header
 col_title, col_badge = st.columns([4, 1])
 with col_title:
     st.markdown('<div class="main-header">? VectorScale Distributed Engine</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-header">Large-Scale Batch Feature Engineering, Arrow SIMD Token Chunking & Vector Database Staging</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="sub-header">Large-Scale Batch Feature Engineering, Arrow SIMD Token Chunking & Vector Database Staging</div>',
+        unsafe_allow_html=True,
+    )
 with col_badge:
     st.write("")
     if "Spark" in cluster_mode:
@@ -99,12 +108,14 @@ with col_badge:
         st.markdown('<span class="badge-sim">?? ZERO-DEP SANDBOX</span>', unsafe_allow_html=True)
 
 # Tabs
-tab1, tab2, tab3, tab4 = st.tabs([
-    "?? Batch Transformation Pipeline",
-    "?? Interactive Vector & Quantization Sandbox",
-    "?? Partition & Similarity Search",
-    "??? Distributed Cluster Telemetry"
-])
+tab1, tab2, tab3, tab4 = st.tabs(
+    [
+        "?? Batch Transformation Pipeline",
+        "?? Interactive Vector & Quantization Sandbox",
+        "?? Partition & Similarity Search",
+        "??? Distributed Cluster Telemetry",
+    ]
+)
 
 with tab1:
     render_live_pipeline_tab(sim_engine, num_docs, quantization_mode)

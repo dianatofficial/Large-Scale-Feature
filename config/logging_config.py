@@ -4,6 +4,7 @@ import sys
 from datetime import datetime, timezone
 from typing import Any, Dict
 
+
 class StructuredJsonFormatter(logging.Formatter):
     """Production JSON formatter for structured logging in distributed systems."""
 
@@ -23,6 +24,7 @@ class StructuredJsonFormatter(logging.Formatter):
         if record.exc_info:
             log_entry["exception"] = self.formatException(record.exc_info)
         return json.dumps(log_entry)
+
 
 def configure_logger(name: str = "vectorscale", level: str = "INFO", log_format: str = "json") -> logging.Logger:
     logger = logging.getLogger(name)

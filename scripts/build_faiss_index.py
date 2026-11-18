@@ -1,6 +1,7 @@
 import argparse
 import sys
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 
@@ -10,9 +11,15 @@ if str(ROOT_DIR) not in sys.path:
 
 from src.storage.vector_db_sink import FaissIndexSink
 
+
 def main():
     parser = argparse.ArgumentParser(description="Construct local vector index from staged vector parquet files.")
-    parser.add_argument("--parquet-dir", type=str, default="data/embeddings/vectors.parquet", help="Path to partitioned Parquet vector directory")
+    parser.add_argument(
+        "--parquet-dir",
+        type=str,
+        default="data/embeddings/vectors.parquet",
+        help="Path to partitioned Parquet vector directory",
+    )
     parser.add_argument("--top-k", type=int, default=5, help="Number of nearest neighbors to query")
     args = parser.parse_args()
 
@@ -48,6 +55,7 @@ def main():
     print(f"\n--- Top {args.top_k} Nearest Neighbors for Benchmark Query ---")
     for r in results:
         print(f"ID: {r['id']} | Cosine Score: {r['score']:.4f} | Category: {r['payload'].get('category')}")
+
 
 if __name__ == "__main__":
     main()

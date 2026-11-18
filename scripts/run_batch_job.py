@@ -1,6 +1,4 @@
 import argparse
-import json
-import logging
 import sys
 from pathlib import Path
 
@@ -9,9 +7,10 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
+from config.logging_config import configure_logger
 from src.config.settings import load_config
 from src.pipeline.runner import PipelineRunner
-from config.logging_config import configure_logger
+
 
 def main():
     parser = argparse.ArgumentParser(description="Execute VectorScale distributed batch feature engineering pipeline.")
@@ -35,17 +34,18 @@ def main():
     runner = PipelineRunner(cfg)
     report = runner.run()
 
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print(f"VectorScale Job Summary [{report.job_id}] - Status: {report.status}")
     print(f"Total Input Records:     {report.total_input_records:,}")
     print(f"Total Vectors Staged:    {report.total_output_vectors:,}")
     print(f"Total Duration:          {report.total_duration_seconds:.2f}s")
     print(f"Overall Throughput:      {report.overall_throughput_records_per_sec:,.1f} records/sec")
     print(f"Quantization:            {report.quantization_mode} (Dim={report.vector_dimension})")
-    print("="*80)
+    print("=" * 80)
 
     if report.status != "SUCCESS":
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

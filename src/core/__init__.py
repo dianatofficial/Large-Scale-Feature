@@ -1,15 +1,23 @@
 """Core feature processing, vector mathematical operations, and schema definitions."""
-from src.core.schemas import RawDocument, CleanedDocument, DocumentChunk, VectorPayload, BatchStageMetrics, PipelineAuditReport
-from src.core.normalizer import TextNormalizer
+
 from src.core.chunker import TextChunker
-from src.core.deduplicator import ExactHasher, SimHasher, MinHashLSH
+from src.core.deduplicator import ExactHasher, MinHashLSH, SimHasher
+from src.core.normalizer import TextNormalizer
+from src.core.schemas import (
+    BatchStageMetrics,
+    CleanedDocument,
+    DocumentChunk,
+    PipelineAuditReport,
+    RawDocument,
+    VectorPayload,
+)
 from src.core.vector_ops import (
-    l2_normalize,
-    quantize_int8,
-    dequantize_int8,
-    compute_quantization_error,
     compute_cosine_matrix,
-    project_pca
+    compute_quantization_error,
+    dequantize_int8,
+    l2_normalize,
+    project_pca,
+    quantize_int8,
 )
 
 __all__ = [
@@ -29,5 +37,5 @@ __all__ = [
     "dequantize_int8",
     "compute_quantization_error",
     "compute_cosine_matrix",
-    "project_pca"
+    "project_pca",
 ]

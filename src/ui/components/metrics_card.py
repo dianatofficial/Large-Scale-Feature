@@ -1,6 +1,9 @@
 import streamlit as st
 
-def render_kpi_row(total_docs: int, total_vectors: int, throughput: float, duration: float, compression_ratio: str = "4.0x (INT8)"):
+
+def render_kpi_row(
+    total_docs: int, total_vectors: int, throughput: float, duration: float, compression_ratio: str = "4.0x (INT8)"
+):
     """Renders modern executive KPI cards with gradient highlights."""
     c1, c2, c3, c4 = st.columns(4)
     with c1:

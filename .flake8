@@ -1,0 +1,7 @@
+[flake8]
+# Long sentences in sample corpora / UI text and sys.path adjustments before imports are intentional.
+per-file-ignores =
+    src/simulation/mock_engine.py: E501
+    src/ui/*: E501,E402
+    scripts/*: E402
+    tests/conftest.py: E501

@@ -1,13 +1,18 @@
 import logging
-from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger(__name__)
+
 
 class MinIOStorageClient:
     """Client for interacting with S3/MinIO object store in distributed pipelines."""
 
-    def __init__(self, endpoint: str = "localhost:9000", access_key: str = "minioadmin", secret_key: str = "minioadmin", secure: bool = False):
+    def __init__(
+        self,
+        endpoint: str = "localhost:9000",
+        access_key: str = "minioadmin",
+        secret_key: str = "minioadmin",
+        secure: bool = False,
+    ):
         self.endpoint = endpoint
         self.access_key = access_key
         self.secret_key = secret_key
@@ -18,11 +23,9 @@ class MinIOStorageClient:
         if self._client is None:
             try:
                 from minio import Minio
+
                 self._client = Minio(
-                    self.endpoint,
-                    access_key=self.access_key,
-                    secret_key=self.secret_key,
-                    secure=self.secure
+                    self.endpoint, access_key=self.access_key, secret_key=self.secret_key, secure=self.secure
                 )
             except ImportError:
                 logger.warning("minio package not installed.")

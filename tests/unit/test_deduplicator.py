@@ -1,16 +1,18 @@
-from src.core.deduplicator import ExactHasher, SimHasher, MinHashLSH
+from src.core.deduplicator import ExactHasher, MinHashLSH, SimHasher
+
 
 def test_exact_hash_deterministic():
     text1 = "Deterministic distributed vector processing engine"
     text2 = "Deterministic distributed vector processing engine"
     text3 = "Different content payload"
-    
+
     h1 = ExactHasher.compute_sha256(text1)
     h2 = ExactHasher.compute_sha256(text2)
     h3 = ExactHasher.compute_sha256(text3)
-    
+
     assert h1 == h2
     assert h1 != h3
+
 
 def test_simhash_near_duplicates():
     simhasher = SimHasher()
@@ -27,6 +29,7 @@ def test_simhash_near_duplicates():
 
     assert dist_near < dist_far
     assert dist_near <= 12
+
 
 def test_minhash_jaccard_estimation():
     lsh = MinHashLSH(num_perm=64, seed=42)

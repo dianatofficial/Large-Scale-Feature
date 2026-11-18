@@ -1,5 +1,6 @@
 import hashlib
-from typing import List, Set
+from typing import List
+
 
 class ExactHasher:
     """Fast deterministic cryptographic hashing for exact document deduplication."""
@@ -11,6 +12,7 @@ class ExactHasher:
     @staticmethod
     def compute_md5(text: str) -> str:
         return hashlib.md5(text.encode("utf-8")).hexdigest()
+
 
 class SimHasher:
     """64-bit SimHash fingerprinting for near-duplicate text detection."""
@@ -36,7 +38,7 @@ class SimHasher:
         fingerprint = 0
         for i in range(self.bit_length):
             if v[i] > 0:
-                fingerprint |= (1 << i)
+                fingerprint |= 1 << i
 
         return fingerprint
 
@@ -50,6 +52,7 @@ class SimHasher:
             x &= x - 1
         return distance
 
+
 class MinHashLSH:
     """MinHash signature generation for fast Jaccard similarity estimation."""
 
@@ -57,9 +60,10 @@ class MinHashLSH:
         self.num_perm = num_perm
         self.seed = seed
         self.prime = 4294967311  # Large 32-bit prime
-        
+
         # Deterministic linear permutation parameters: h_i(x) = (a_i * x + b_i) % prime
         import random
+
         rng = random.Random(seed)
         self.a_params = [rng.randint(1, self.prime - 1) for _ in range(num_perm)]
         self.b_params = [rng.randint(0, self.prime - 1) for _ in range(num_perm)]

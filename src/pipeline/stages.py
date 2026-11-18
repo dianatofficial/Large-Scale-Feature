@@ -1,14 +1,17 @@
 import logging
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Tuple
+from typing import Any, Tuple
+
 from pyspark.sql import DataFrame, SparkSession
+
 from src.config.settings import AppConfig
 from src.core.schemas import BatchStageMetrics
 from src.spark.transformations import FeaturePipelineTransformer
 from src.storage.parquet_sink import ParquetVectorSink
 
 logger = logging.getLogger(__name__)
+
 
 class PipelineStage(ABC):
     """Abstract base class representing an isolated pipeline execution stage."""
@@ -20,6 +23,7 @@ class PipelineStage(ABC):
     @abstractmethod
     def execute(self, spark: SparkSession, input_data: Any) -> Tuple[Any, BatchStageMetrics]:
         pass
+
 
 class IngestStage(PipelineStage):
     """Reads raw document files (JSONL / Parquet) into a distributed DataFrame."""
@@ -49,9 +53,10 @@ class IngestStage(PipelineStage):
             input_records=count,
             output_records=count,
             duration_seconds=round(duration, 3),
-            throughput_records_per_sec=round(throughput, 2)
+            throughput_records_per_sec=round(throughput, 2),
         )
         return df, metrics
+
 
 class TransformStage(PipelineStage):
     """Executes full transformation graph (clean, dedup, chunk, embed, normalize, quantize)."""
@@ -65,7 +70,7 @@ class TransformStage(PipelineStage):
         input_count = input_data.count()
 
         transformed_df = self.transformer.transform_all(input_data)
-        
+
         # Cache transformed DataFrame to avoid duplicate execution
         transformed_df = transformed_df.cache()
         output_count = transformed_df.count()
@@ -78,9 +83,10 @@ class TransformStage(PipelineStage):
             input_records=input_count,
             output_records=output_count,
             duration_seconds=round(duration, 3),
-            throughput_records_per_sec=round(throughput, 2)
+            throughput_records_per_sec=round(throughput, 2),
         )
         return transformed_df, metrics
+
 
 class SinkStage(PipelineStage):
     """Persists processed vectors to partitioned Parquet storage and/or Vector DB."""
@@ -104,6 +110,6 @@ class SinkStage(PipelineStage):
             input_records=record_count,
             output_records=record_count,
             duration_seconds=round(duration, 3),
-            throughput_records_per_sec=round(throughput, 2)
+            throughput_records_per_sec=round(throughput, 2),
         )
         return output_path, metrics

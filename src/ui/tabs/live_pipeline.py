@@ -1,8 +1,10 @@
-import streamlit as st
 import pandas as pd
 import plotly.express as px
+import streamlit as st
+
 from src.ui.components.metrics_card import render_kpi_row
 from src.ui.components.pipeline_graph import render_pipeline_dag
+
 
 def render_live_pipeline_tab(sim_engine, num_docs: int, quant_mode: str):
     st.markdown("### Distributed Batch Transformation Pipeline")
@@ -12,17 +14,21 @@ def render_live_pipeline_tab(sim_engine, num_docs: int, quant_mode: str):
     with col_btn:
         run_clicked = st.button("Trigger Batch Transformation", type="primary", use_container_width=True)
     with col_info:
-        st.info(f"Target Configuration: **{num_docs} Documents** | Model: **384-dim Dense** | Quantization: **{quant_mode}** | Partitions: **{sim_engine.num_partitions}**")
+        st.info(
+            f"Target Configuration: **{num_docs} Documents** | Model: **384-dim Dense** | Quantization: **{quant_mode}** | Partitions: **{sim_engine.num_partitions}**"
+        )
 
     if run_clicked or "last_run_data" not in st.session_state:
         with st.spinner("Processing distributed transformation stages..."):
             raw_corpus = sim_engine.generate_synthetic_corpus(num_documents=num_docs)
-            final_df, audit_report, analytics = sim_engine.run_simulation_pipeline(raw_corpus, quantization_mode=quant_mode)
+            final_df, audit_report, analytics = sim_engine.run_simulation_pipeline(
+                raw_corpus, quantization_mode=quant_mode
+            )
             st.session_state["last_run_data"] = {
                 "final_df": final_df,
                 "audit_report": audit_report,
                 "analytics": analytics,
-                "raw_corpus": raw_corpus
+                "raw_corpus": raw_corpus,
             }
 
     data = st.session_state.get("last_run_data")
@@ -38,7 +44,7 @@ def render_live_pipeline_tab(sim_engine, num_docs: int, quant_mode: str):
         total_vectors=report.total_output_vectors,
         throughput=report.overall_throughput_records_per_sec,
         duration=report.total_duration_seconds,
-        compression_ratio="4.0x (INT8)" if quant_mode == "INT8" else "1.0x (FP32)"
+        compression_ratio="4.0x (INT8)" if quant_mode == "INT8" else "1.0x (FP32)",
     )
 
     st.divider()
@@ -50,15 +56,17 @@ def render_live_pipeline_tab(sim_engine, num_docs: int, quant_mode: str):
         render_pipeline_dag()
     with c_chart:
         st.markdown("#### Stage Latency & Throughput Breakdown")
-        stages_df = pd.DataFrame([
-            {
-                "Stage": m.stage_name,
-                "Duration (s)": m.duration_seconds,
-                "Throughput (records/s)": m.throughput_records_per_sec,
-                "Output Count": m.output_records
-            }
-            for m in report.stage_metrics
-        ])
+        stages_df = pd.DataFrame(
+            [
+                {
+                    "Stage": m.stage_name,
+                    "Duration (s)": m.duration_seconds,
+                    "Throughput (records/s)": m.throughput_records_per_sec,
+                    "Output Count": m.output_records,
+                }
+                for m in report.stage_metrics
+            ]
+        )
         fig = px.bar(
             stages_df,
             x="Duration (s)",
@@ -67,11 +75,13 @@ def render_live_pipeline_tab(sim_engine, num_docs: int, quant_mode: str):
             color="Throughput (records/s)",
             color_continuous_scale="Tealgrn",
             template="plotly_dark",
-            title="Stage Duration & Processing Velocity"
+            title="Stage Duration & Processing Velocity",
         )
         fig.update_layout(margin=dict(l=10, r=10, b=20, t=40))
         st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("#### Staged Feature Records (Sample Output)")
-    display_df = final_df[["chunk_id", "document_id", "category", "chunk_content", "scale_factor", "partition_id"]].head(10)
+    display_df = final_df[
+        ["chunk_id", "document_id", "category", "chunk_content", "scale_factor", "partition_id"]
+    ].head(10)
     st.dataframe(display_df, use_container_width=True)

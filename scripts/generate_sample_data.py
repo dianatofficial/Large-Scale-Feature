@@ -9,8 +9,11 @@ if str(ROOT_DIR) not in sys.path:
 
 from src.simulation.mock_engine import VectorScaleSimulationEngine
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Generate synthetic multi-domain document corpus for batch feature pipeline.")
+    parser = argparse.ArgumentParser(
+        description="Generate synthetic multi-domain document corpus for batch feature pipeline."
+    )
     parser.add_argument("--output", type=str, default="data/sample/documents.jsonl", help="Output JSONL file path")
     parser.add_argument("--num-records", type=int, default=1000, help="Number of records to generate")
     args = parser.parse_args()
@@ -27,6 +30,7 @@ def main():
             f.write(json.dumps(row.to_dict()) + "\n")
 
     print(f"Successfully wrote {len(df)} records to {out_path}")
+
 
 if __name__ == "__main__":
     main()

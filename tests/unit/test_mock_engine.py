@@ -1,9 +1,10 @@
 from src.simulation.mock_engine import VectorScaleSimulationEngine
 
+
 def test_simulation_engine_end_to_end():
     engine = VectorScaleSimulationEngine(embedding_dim=384, chunk_size=64, num_partitions=4)
     raw_df = engine.generate_synthetic_corpus(num_documents=10)
-    
+
     assert len(raw_df) == 10
     assert "content" in raw_df.columns
 

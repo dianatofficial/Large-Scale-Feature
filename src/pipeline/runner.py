@@ -1,15 +1,16 @@
-import json
 import logging
 import time
 import uuid
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List
+
 from src.config.settings import AppConfig
 from src.core.schemas import BatchStageMetrics, PipelineAuditReport
-from src.pipeline.stages import IngestStage, TransformStage, SinkStage
+from src.pipeline.stages import IngestStage, SinkStage, TransformStage
 from src.spark.session import SparkSessionManager
 
 logger = logging.getLogger(__name__)
+
 
 class PipelineRunner:
     """Master orchestrator for end-to-end distributed batch feature & vector processing."""
@@ -79,9 +80,10 @@ class PipelineRunner:
             vector_dimension=self.config.vector_engine.embedding_dim,
             num_partitions=self.config.partitioning.num_partitions,
             storage_sink=self.config.storage.sink_type,
-            errors=errors
+            errors=errors,
         )
 
-        logger.info("Pipeline Job Finished: Status=%s, TotalVectors=%d, Duration=%.2fs",
-                    status, total_output, total_duration)
+        logger.info(
+            "Pipeline Job Finished: Status=%s, TotalVectors=%d, Duration=%.2fs", status, total_output, total_duration
+        )
         return report

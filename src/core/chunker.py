@@ -1,6 +1,7 @@
-import re
 from typing import List, Tuple
+
 from src.core.schemas import DocumentChunk
+
 
 class TextChunker:
     """Token-aware recursive text chunker preserving sentence and structural boundaries."""
@@ -12,7 +13,9 @@ class TextChunker:
         self.chunk_overlap = chunk_overlap
         self.step_size = chunk_size - chunk_overlap
 
-    def chunk_text(self, document_id: str, text: str, source: str = "unknown", category: str = "general") -> List[DocumentChunk]:
+    def chunk_text(
+        self, document_id: str, text: str, source: str = "unknown", category: str = "general"
+    ) -> List[DocumentChunk]:
         """Splits document text into overlapping token-aware chunks with character offsets."""
         if not text or not text.strip():
             return []
@@ -30,13 +33,13 @@ class TextChunker:
                     start_char=0,
                     end_char=len(text.strip()),
                     source=source,
-                    category=category
+                    category=category,
                 )
             ]
 
         chunks: List[DocumentChunk] = []
         word_spans: List[Tuple[int, int]] = []
-        
+
         # Locate character positions of each word in the source text
         current_idx = 0
         for word in words:
@@ -54,7 +57,7 @@ class TextChunker:
         while start_word_idx < total_words:
             end_word_idx = min(start_word_idx + self.chunk_size, total_words)
             chunk_words = words[start_word_idx:end_word_idx]
-            
+
             start_char = word_spans[start_word_idx][0]
             end_char = word_spans[end_word_idx - 1][1]
             chunk_content = text[start_char:end_char].strip()
@@ -70,7 +73,7 @@ class TextChunker:
                     start_char=start_char,
                     end_char=end_char,
                     source=source,
-                    category=category
+                    category=category,
                 )
             )
 

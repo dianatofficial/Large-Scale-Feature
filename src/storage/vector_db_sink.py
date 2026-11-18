@@ -1,9 +1,11 @@
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
+
 import numpy as np
 
 logger = logging.getLogger(__name__)
+
 
 class BaseVectorSink(ABC):
     """Abstract base interface for bulk vector database ingestion sinks."""
@@ -13,8 +15,11 @@ class BaseVectorSink(ABC):
         pass
 
     @abstractmethod
-    def upsert_batch(self, collection_name: str, ids: List[str], vectors: np.ndarray, payloads: List[Dict[str, Any]]) -> int:
+    def upsert_batch(
+        self, collection_name: str, ids: List[str], vectors: np.ndarray, payloads: List[Dict[str, Any]]
+    ) -> int:
         pass
+
 
 class MockVectorSink(BaseVectorSink):
     """In-memory validation sink for testing and standalone simulation."""
@@ -24,16 +29,17 @@ class MockVectorSink(BaseVectorSink):
 
     def create_collection_if_not_exists(self, collection_name: str, vector_dim: int) -> bool:
         if collection_name not in self.collections:
-            self.collections[collection_name] = {
-                "vector_dim": vector_dim,
-                "points": {}
-            }
+            self.collections[collection_name] = {"vector_dim": vector_dim, "points": {}}
             logger.info("Created mock collection: %s (dim=%d)", collection_name, vector_dim)
         return True
 
-    def upsert_batch(self, collection_name: str, ids: List[str], vectors: np.ndarray, payloads: List[Dict[str, Any]]) -> int:
+    def upsert_batch(
+        self, collection_name: str, ids: List[str], vectors: np.ndarray, payloads: List[Dict[str, Any]]
+    ) -> int:
         if collection_name not in self.collections:
-            self.create_collection_if_not_exists(collection_name, vectors.shape[1] if vectors.ndim > 1 else len(vectors))
+            self.create_collection_if_not_exists(
+                collection_name, vectors.shape[1] if vectors.ndim > 1 else len(vectors)
+            )
 
         coll = self.collections[collection_name]["points"]
         for idx, vec, payload in zip(ids, vectors, payloads):
@@ -41,6 +47,7 @@ class MockVectorSink(BaseVectorSink):
 
         logger.info("Upserted %d points to mock collection %s (Total=%d)", len(ids), collection_name, len(coll))
         return len(ids)
+
 
 class QdrantVectorSink(BaseVectorSink):
     """Direct bulk ingestion sink for Qdrant Vector Database."""
@@ -54,6 +61,7 @@ class QdrantVectorSink(BaseVectorSink):
         if self._client is None:
             try:
                 from qdrant_client import QdrantClient
+
                 self._client = QdrantClient(url=self.url, api_key=self.api_key)
             except ImportError:
                 logger.warning("qdrant-client package not installed. Qdrant sink unavailable.")
@@ -65,12 +73,13 @@ class QdrantVectorSink(BaseVectorSink):
         if client is None:
             return False
         try:
-            from qdrant_client.models import VectorParams, Distance
+            from qdrant_client.models import Distance, VectorParams
+
             collections = [c.name for c in client.get_collections().collections]
             if collection_name not in collections:
                 client.create_collection(
                     collection_name=collection_name,
-                    vectors_config=VectorParams(size=vector_dim, distance=Distance.COSINE)
+                    vectors_config=VectorParams(size=vector_dim, distance=Distance.COSINE),
                 )
                 logger.info("Created Qdrant collection: %s (dim=%d)", collection_name, vector_dim)
             return True
@@ -78,12 +87,15 @@ class QdrantVectorSink(BaseVectorSink):
             logger.error("Failed to create Qdrant collection: %s", exc)
             return False
 
-    def upsert_batch(self, collection_name: str, ids: List[str], vectors: np.ndarray, payloads: List[Dict[str, Any]]) -> int:
+    def upsert_batch(
+        self, collection_name: str, ids: List[str], vectors: np.ndarray, payloads: List[Dict[str, Any]]
+    ) -> int:
         client = self._get_client()
         if client is None:
             return 0
         try:
             from qdrant_client.models import PointStruct
+
             points = [
                 PointStruct(id=i, vector=v.tolist() if isinstance(v, np.ndarray) else v, payload=p)
                 for i, v, p in zip(ids, vectors, payloads)
@@ -94,6 +106,7 @@ class QdrantVectorSink(BaseVectorSink):
         except Exception as exc:
             logger.error("Failed to upsert points to Qdrant: %s", exc)
             return 0
+
 
 class FaissIndexSink:
     """Local dense vector index constructor using FAISS or pure NumPy cosine search fallback."""
@@ -132,9 +145,11 @@ class FaissIndexSink:
 
         results = []
         for idx in top_indices:
-            results.append({
-                "id": self.ids[idx],
-                "score": float(scores[idx]),
-                "payload": self.payloads[idx] if idx < len(self.payloads) else {}
-            })
+            results.append(
+                {
+                    "id": self.ids[idx],
+                    "score": float(scores[idx]),
+                    "payload": self.payloads[idx] if idx < len(self.payloads) else {},
+                }
+            )
         return results

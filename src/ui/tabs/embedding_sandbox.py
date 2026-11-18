@@ -1,20 +1,26 @@
-import streamlit as st
 import numpy as np
-from src.core.vector_ops import quantize_int8, compute_quantization_error, compute_cosine_matrix
+import streamlit as st
+
+from src.core.vector_ops import compute_cosine_matrix, compute_quantization_error, quantize_int8
 from src.ui.components.vector_visualizer import (
-    render_vector_scatter_3d,
     render_cosine_heatmap,
-    render_quantization_comparison
+    render_quantization_comparison,
+    render_vector_scatter_3d,
 )
 
 DEFAULT_TEXT_A = "High-throughput distributed feature engineering pipeline leverages PySpark Pandas UDFs with Apache Arrow serialization."
 DEFAULT_TEXT_B = "Optimized vectorized transformations reduce inter-process deserialization latency between JVM and Python worker tasks."
 DEFAULT_TEXT_C = "Single-cell genomic sequencing profiles transcriptional heterogeneity across tumor-infiltrating cytotoxic lymphocytes."
-DEFAULT_TEXT_D = "Quarterly financial auditing affirms statutory compliance with Basel III liquidity coverage framework."
+DEFAULT_TEXT_D = (
+    "Quarterly financial auditing affirms statutory compliance with Basel III liquidity coverage framework."
+)
+
 
 def render_embedding_sandbox_tab(sim_engine):
     st.markdown("### Interactive Vector & Quantization Playground")
-    st.caption("Inspect live token chunking, semantic cosine similarity heatmaps, and bit-level INT8 quantization loss.")
+    st.caption(
+        "Inspect live token chunking, semantic cosine similarity heatmaps, and bit-level INT8 quantization loss."
+    )
 
     st.markdown("#### 1. Custom Text Chunk Analysis")
     col1, col2 = st.columns(2)
@@ -27,7 +33,7 @@ def render_embedding_sandbox_tab(sim_engine):
 
     inputs = [text_1, text_2, text_3, text_4]
     labels = ["Doc A (Systems)", "Doc B (PySpark)", "Doc C (Biomed)", "Doc D (Finance)"]
-    
+
     # Compute embeddings
     vectors = np.vstack([sim_engine.generate_dense_embedding(t) for t in inputs])
     cosine_mat = compute_cosine_matrix(vectors)

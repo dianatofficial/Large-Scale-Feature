@@ -1,5 +1,6 @@
 from typing import Dict
 
+
 def get_optimized_spark_properties(
     app_name: str = "VectorScale-Batch-Pipeline",
     driver_memory: str = "4g",

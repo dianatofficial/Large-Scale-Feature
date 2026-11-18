@@ -2,13 +2,14 @@ import re
 import unicodedata
 from typing import Dict, List, Pattern
 
+
 class TextNormalizer:
     """High-performance text cleaning and lexical normalization engine."""
 
     def __init__(self, lowercase: bool = False, strip_accents: bool = True):
         self.lowercase = lowercase
         self.strip_accents = strip_accents
-        
+
         # Pre-compiled high efficiency regex patterns
         self._html_tag_re: Pattern = re.compile(r"<[^>]+>", re.IGNORECASE)
         self._markdown_link_re: Pattern = re.compile(r"\[([^\]]+)\]\([^\)]+\)")
@@ -61,5 +62,5 @@ class TextNormalizer:
             "char_count": len(text),
             "word_count": len(tokens),
             "digit_count": sum(1 for c in text if c.isdigit()),
-            "whitespace_count": sum(1 for c in text if c.isspace())
+            "whitespace_count": sum(1 for c in text if c.isspace()),
         }
