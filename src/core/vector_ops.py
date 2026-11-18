@@ -6,9 +6,8 @@ import numpy as np
 def l2_normalize(vectors: np.ndarray, eps: float = 1e-12) -> np.ndarray:
     """Applies vectorized L2 Unit Normalization (v / max(||v||_2, eps))."""
     if vectors.ndim == 1:
-        norm = np.linalg.norm(vectors)
-        norm = max(float(norm), eps)
-        return (vectors / norm).astype(np.float32)
+        norm_value = max(float(np.linalg.norm(vectors)), eps)
+        return (vectors / norm_value).astype(np.float32)
 
     norms = np.linalg.norm(vectors, axis=1, keepdims=True)
     norms = np.maximum(norms, eps)
